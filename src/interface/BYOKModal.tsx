@@ -1,7 +1,7 @@
 import { Eye, EyeOff, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { useUiStore } from '../integration/store/uiStore';
-import { DEFAULT_MODELS } from '../core/llm/constants';
+import { CLAUDE_MODELS, DEFAULT_MODELS } from '../core/llm/constants';
 
 interface BYOKModalProps {
   onClose: () => void;
@@ -14,12 +14,25 @@ const BYOKModal: React.FC<BYOKModalProps> = ({ onClose }) => {
 
   const [apiKey, setApiKey] = useState<string>(llmConfig.apiKey || '');
   const [showKey, setShowKey] = useState(false);
+  const [provider, setProvider] = useState<'claude' | 'gemini'>(llmConfig.provider ?? 'claude');
+  const defaultModel = (p: 'claude' | 'gemini') => (p === 'claude' ? CLAUDE_MODELS.default : DEFAULT_MODELS.text);
+  const currentModel = (llmConfig.model || '').startsWith('claude') === (provider === 'claude') && llmConfig.model
+    ? llmConfig.model
+    : defaultModel(provider);
+  const [model, setModel] = useState<string>(currentModel);
+  const isClaude = provider === 'claude';
+  const switchProvider = (p: 'claude' | 'gemini') => {
+    setProvider(p);
+    setModel(defaultModel(p));
+    setApiKey('');
+  };
   const [isErrorExpanded, setIsErrorExpanded] = useState(false);
 
   const handleSave = () => {
     const config = {
+      provider,
       apiKey: apiKey.trim(),
-      model: llmConfig.model || DEFAULT_MODELS.text,
+      model,
     };
     setLlmConfig(config);
     try {
@@ -32,8 +45,9 @@ const BYOKModal: React.FC<BYOKModalProps> = ({ onClose }) => {
 
   const handleClear = () => {
     const emptyConfig = {
+      provider,
       apiKey: '',
-      model: llmConfig.model || DEFAULT_MODELS.text,
+      model,
     };
     setApiKey('');
     setLlmConfig(emptyConfig);
@@ -67,22 +81,22 @@ const BYOKModal: React.FC<BYOKModalProps> = ({ onClose }) => {
           {/* Header */}
           <div className="mb-6">
             <h2 className="text-3xl font-black text-darkDelegation tracking-tight mb-2">
-              Gemini API Key
+              {isClaude ? 'Anthropic API Key' : 'Gemini API Key'}
             </h2>
             <a
-              href="https://aistudio.google.com/app/apikey"
+              href={isClaude ? 'https://console.anthropic.com/settings/keys' : 'https://aistudio.google.com/app/apikey'}
               target="_blank"
               rel="noopener"
               className="group inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 hover:border-emerald-200 rounded-full transition-all duration-200 mb-3"
             >
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600">Get Gemini API Key</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600">{isClaude ? 'Get Anthropic API Key' : 'Get Gemini API Key'}</span>
               <svg className="text-emerald-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="7" y1="17" x2="17" y2="7"></line>
                 <polyline points="7 7 17 7 17 17"></polyline>
               </svg>
             </a>
             <p className="text-zinc-400 text-sm font-medium leading-relaxed max-w-[240px]">
-              Your key is stored locally and never leaves your browser.
+              Your key is stored locally and sent only to {isClaude ? 'api.anthropic.com' : 'Google'}.
             </p>
           </div>
 
@@ -117,6 +131,33 @@ const BYOKModal: React.FC<BYOKModalProps> = ({ onClose }) => {
           })()}
 
 
+          {/* Provider + model */}
+          <div className="mb-6 flex gap-2">
+            {(['claude', 'gemini'] as const).map(p => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => switchProvider(p)}
+                className={`flex-1 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all cursor-pointer border ${provider === p ? 'bg-darkDelegation text-white border-darkDelegation' : 'bg-zinc-50 text-zinc-400 border-zinc-100 hover:border-zinc-200'}`}
+              >
+                {p === 'claude' ? 'Claude' : 'Gemini'}
+              </button>
+            ))}
+          </div>
+          {isClaude && (
+            <div className="mb-6">
+              <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-zinc-300 mb-2 ml-1">Model</label>
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-4 py-3 text-sm text-darkDelegation font-mono focus:outline-none focus:border-zinc-200"
+              >
+                {CLAUDE_MODELS.available.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+              <p className="text-zinc-400 text-[11px] mt-2 ml-1 leading-snug">Claude runs text teams only. Image, music and video teams need Gemini.</p>
+            </div>
+          )}
+
           {/* API Key input */}
           <div className="mb-10">
             <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-zinc-300 mb-4 ml-1">
@@ -127,7 +168,7 @@ const BYOKModal: React.FC<BYOKModalProps> = ({ onClose }) => {
                 type={showKey ? 'text' : 'password'}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Paste your API key here"
+                placeholder={isClaude ? 'sk-ant-...' : 'Paste your API key here'}
                 className="w-full bg-zinc-50 border border-zinc-100 rounded-3xl px-6 py-4 pr-14 text-sm text-darkDelegation font-mono placeholder:text-zinc-300 placeholder:font-sans focus:outline-none focus:border-zinc-200 transition-all shadow-sm group-hover:shadow-md"
               />
               <button

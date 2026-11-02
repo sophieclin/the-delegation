@@ -1,5 +1,6 @@
 import { LLMMessage } from '../llm/types';
 import { GeminiProvider } from '../llm/providers/GeminiProvider';
+import { getProvider, getProviderId, resolveTextModel } from '../llm/getProvider';
 import { useUiStore } from '../../integration/store/uiStore';
 import { useCoreStore } from '../../integration/store/coreStore';
 import { useTeamStore } from '../../integration/store/teamStore';
@@ -38,9 +39,8 @@ export class AgentBrain {
       this.refreshFromStore();
       const core = useCoreStore.getState();
       const llmConfig = useUiStore.getState().llmConfig;
-      if (!llmConfig.apiKey) throw new Error('Gemini API key is required');
-      const provider = new GeminiProvider(llmConfig.apiKey);
-      const model = this.host.data.model || llmConfig.model;
+      const provider = getProvider(llmConfig);
+      const model = resolveTextModel(llmConfig, this.host.data.model);
       const teamId = useTeamStore.getState().selectedAgentSetId;
       const activeTeam = useTeamStore.getState().customSystems.find(s => s.id === teamId)
         || AGENTIC_SETS.find(s => s.id === teamId);
@@ -235,7 +235,11 @@ export class AgentBrain {
 
     try {
       const llmConfig = useUiStore.getState().llmConfig;
-      if (!llmConfig.apiKey) throw new Error('Gemini API key is required');
+      // Image, music and video generation are Gemini-only; text teams never reach the provider here.
+      if (activeTeam.outputType !== 'text' && getProviderId(llmConfig) === 'claude') {
+        throw new Error(`${activeTeam.outputType} generation is Gemini-only. Switch the provider to Gemini in the API key dialog, or use a text team.`);
+      }
+      if (!llmConfig.apiKey) throw new Error('API key is required');
       const provider = new GeminiProvider(llmConfig.apiKey) as any;
       const model = options.model || activeTeam.outputModel || llmConfig.model;
 

@@ -28,3 +28,12 @@ export const AVAILABLE_MODELS = {
 } as const;
 
 export type ModelType = keyof typeof AVAILABLE_MODELS;
+
+// Claude text models (Anthropic Messages API). IDs from the Anthropic models docs, checked 2026-10-06;
+// re-verify at https://docs.claude.com/en/docs/about-claude/models before the demo.
+export const CLAUDE_MODELS = {
+  default: 'claude-haiku-5-5', // fast and cheap, good for the live demo
+  available: ['claude-haiku-5-5', 'claude-sonnet-5-5'] as const,
+} as const;
+
+export type LLMProviderId = 'claude' | 'gemini';

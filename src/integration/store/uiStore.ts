@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { getAllAgents } from '../../data/agents';
 import { AgentState, CharacterState } from '../../types';
 import { useTeamStore, getActiveAgentSet } from './teamStore';
-import { DEFAULT_MODELS } from '../../core/llm/constants';
+import { CLAUDE_MODELS } from '../../core/llm/constants';
 
 export const useUiStore = create<CharacterState>()(
   (set) => ({
@@ -36,11 +36,12 @@ export const useUiStore = create<CharacterState>()(
     llmConfig: (() => {
       try {
         const saved = localStorage.getItem('byok-config');
-        if (saved) return JSON.parse(saved);
+        if (saved) return { provider: 'claude', ...JSON.parse(saved) };
       } catch { }
       return {
+        provider: 'claude',
         apiKey: '',
-        model: DEFAULT_MODELS.text
+        model: CLAUDE_MODELS.default
       };
     })(),
 

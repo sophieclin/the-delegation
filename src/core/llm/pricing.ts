@@ -29,12 +29,22 @@ export const GEMINI_PRICING: Record<string, ModelPricing> = {
   'veo-3.1-generate-preview': { perSecond: 0.400 },
 };
 
+// Claude text pricing, USD per 1M tokens. TODO(verify): taken from the Anthropic pricing page snapshot
+// of 2026-10-06; confirm at https://www.anthropic.com/pricing. Haiku 5.5 is $0.50/$2.50 for prompts
+// over 100K tokens (not modelled; demo prompts are far smaller). Cache reads/writes are billed as plain input here.
+export const CLAUDE_PRICING: Record<string, ModelPricing> = {
+  'claude-haiku-5-5': { inputPer1M: 0.10, outputPer1M: 0.50 },
+  'claude-sonnet-5-5': { inputPer1M: 2.00, outputPer1M: 10.00 },
+};
+
+const ALL_PRICING: Record<string, ModelPricing> = { ...GEMINI_PRICING, ...CLAUDE_PRICING };
+
 export const DEFAULT_PRICING: ModelPricing = GEMINI_PRICING[DEFAULT_MODELS.text];
 
 export function calculateCost(promptTokens: number, completionTokens: number, modelName: string, durationOrCount?: number): number {
   const lowerName = modelName.toLowerCase();
-  const pricingKey = Object.keys(GEMINI_PRICING).find(key => lowerName.includes(key));
-  const pricing = pricingKey ? GEMINI_PRICING[pricingKey] : DEFAULT_PRICING;
+  const pricingKey = Object.keys(ALL_PRICING).find(key => lowerName.includes(key));
+  const pricing = pricingKey ? ALL_PRICING[pricingKey] : DEFAULT_PRICING;
 
   // 1. Per Image
   if (pricing.perImage !== undefined) {

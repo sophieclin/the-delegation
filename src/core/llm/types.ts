@@ -31,6 +31,7 @@ export interface LLMToolDefinition {
 }
 
 export interface LLMConfig {
+  provider?: 'claude' | 'gemini'; // defaults to 'claude' in this fork
   apiKey?: string;
   baseUrl?: string;
   model: string;

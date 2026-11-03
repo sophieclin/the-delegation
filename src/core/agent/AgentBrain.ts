@@ -7,6 +7,7 @@ import { useTeamStore } from '../../integration/store/teamStore';
 import { ToolRegistry } from './ToolRegistry';
 import { PromptBuilder } from './PromptBuilder';
 import { AGENTIC_SETS, AgentNode } from '../../data/agents';
+import { latestVerdictRound, REVISION_PROMPT } from './reviewLoop';
 
 export interface BrainHost {
   data: AgentNode;
@@ -187,6 +188,9 @@ export class AgentBrain {
 
   /** Autonomous Intent: Finalize and deliver the project results. */
   public async concludeProject() {
+    if (latestVerdictRound(useCoreStore.getState().tasks) > 0) {
+      return this.think(REVISION_PROMPT, { silent: true });
+    }
     return this.think('All tasks are complete! Use the deliver_project tool to fulfill the final delivery with the project result.', { silent: true });
   }
 

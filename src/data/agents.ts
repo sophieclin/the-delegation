@@ -28,6 +28,8 @@ export interface AgenticSystem {
   outputType: OutputType;
   outputModel: string;
   outputAutoApprove?: boolean;
+  /** Before delivering, the lead's draft goes to the advisors for PASS/FAIL verdicts; repeats until all pass or maxRounds is reached. */
+  reviewLoop?: { maxRounds: number };
   user: {
     index: number;
     model: string;
@@ -332,6 +334,7 @@ export const AGENTIC_SETS: AgenticSystem[] = [
     outputType: 'text',
     outputModel: DEFAULT_MODELS.text,
     outputAutoApprove: false,
+    reviewLoop: { maxRounds: 2 },
     user: { index: 0, model: 'Human', position: { x: 0, y: 0 } },
     leadAgent: {
       id: 'board-chair',

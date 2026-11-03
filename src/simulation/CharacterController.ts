@@ -64,11 +64,6 @@ export class CharacterController implements ICharacterDriver {
     this.stateMachine.transition(index, state, this);
   }
 
-  /** True if the point lies on the walkable navmesh. */
-  public isWalkable(point: THREE.Vector3): boolean {
-    return this.navMesh.isPointOnNavMesh(point);
-  }
-
   /**
    * Walk a character to a world-space position using the navmesh.
    * Automatically transitions to 'walk' and then to `arrivalState` on arrival.

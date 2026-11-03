@@ -338,7 +338,7 @@ export class CharacterManager {
         posElement.assign(vec4(pos, 1.0));
       });
 
-    })().compute(this.instanceCount);
+})().compute(this.instanceCount, [1]);
   }
 
   private createInstancedMesh() {

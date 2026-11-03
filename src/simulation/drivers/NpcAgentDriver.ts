@@ -176,9 +176,6 @@ export class NpcAgentDriver implements IAgentDriver {
         const target = areaPoi.position.clone();
         target.x += Math.cos(angle) * radius;
         target.z += Math.sin(angle) * radius;
-        // The per-agent offset can land inside a wall (moveTo forces the final waypoint to the
-        // exact target), so fall back to the area point itself when it is off the navmesh.
-        if (!this.controller.isWalkable(target)) target.copy(areaPoi.position);
 
         // Calculate "natural" rotation: facing the center of the area
         const direction = new THREE.Vector3().subVectors(areaPoi.position, target).normalize();

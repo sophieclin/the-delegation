@@ -1,7 +1,9 @@
 import { Edit2, Pipette, Trash2, Users, X } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AgenticSystem, DEFAULT_AGENTIC_SET_ID, getAllAgents } from '../../data/agents';
-import { DEFAULT_MODELS, AVAILABLE_MODELS, ModelType } from '../../core/llm/constants';
+import { DEFAULT_MODELS, AVAILABLE_MODELS, CLAUDE_MODELS, ModelType } from '../../core/llm/constants';
+import { getProviderId } from '../../core/llm/getProvider';
+import { useUiStore } from '../../integration/store/uiStore';
 import { USER_COLOR } from '../../theme/brand';
 import { useTeamStore } from '../../integration/store/teamStore';
 import { useSceneManager } from '../../simulation/SceneContext';
@@ -34,6 +36,9 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   const colorInputRef = useRef<HTMLInputElement>(null);
 
   const [localEditData, setLocalEditData] = useState<Partial<AgenticSystem>>({});
+  const llmConfig = useUiStore(s => s.llmConfig);
+  // Text output runs on the configured provider; with Claude, offer Claude models instead of Gemini ones.
+  const claudeText = (localEditData.outputType ?? 'text') === 'text' && getProviderId(llmConfig) === 'claude';
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [hasColorSuggestion, setHasColorSuggestion] = useState(false);
@@ -282,11 +287,11 @@ export const TeamCard: React.FC<TeamCardProps> = ({
                 <div className="space-y-1">
                   <label className="text-[7px] font-black uppercase text-zinc-400 ml-1">Output Model</label>
                   <select
-                    value={localEditData.outputModel || DEFAULT_MODELS.text}
+                    value={claudeText ? (CLAUDE_MODELS.available as readonly string[]).includes(localEditData.outputModel) ? localEditData.outputModel : CLAUDE_MODELS.default : (localEditData.outputModel || DEFAULT_MODELS.text)}
                     onChange={(e) => setLocalEditData(prev => ({ ...prev, outputModel: e.target.value }))}
                     className="w-full bg-white border border-zinc-100 text-[10px] font-bold rounded-xl px-2.5 py-1.5 outline-none cursor-pointer lowercase"
                   >
-                    {(AVAILABLE_MODELS[localEditData.outputType as ModelType] || []).map(model => (
+                    {(claudeText ? CLAUDE_MODELS.available : (AVAILABLE_MODELS[localEditData.outputType as ModelType] || [])).map(model => (
                       <option key={model} value={model}>{model}</option>
                     ))}
                   </select>

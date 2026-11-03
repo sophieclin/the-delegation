@@ -1,5 +1,5 @@
 import { USER_COLOR } from '../theme/brand';
-import { DEFAULT_MODELS } from '../core/llm/constants';
+import { CLAUDE_MODELS, DEFAULT_MODELS } from '../core/llm/constants';
 
 export const USER_ID = 'user';
 export const USER_NAME = 'User';
@@ -28,6 +28,8 @@ export interface AgenticSystem {
   outputType: OutputType;
   outputModel: string;
   outputAutoApprove?: boolean;
+  /** Before delivering, the lead's draft goes to the advisors for PASS/FAIL verdicts; repeats until all pass or maxRounds is reached. */
+  reviewLoop?: { maxRounds: number };
   user: {
     index: number;
     model: string;
@@ -319,6 +321,59 @@ export const AGENTIC_SETS: AgenticSystem[] = [
               position: { x: 0, y: 390 }
             }
           ]
+        }
+      ]
+    }
+  },
+  {
+    id: 'startup-stress-test',
+    teamName: 'Startup Stress-Test Board',
+    teamType: 'Advisory',
+    teamDescription: 'A hostile-but-useful board that pressure-tests a startup pitch: skeptical investor, target customer and operations lead, chaired by a lead who delivers a risk memo and pre-mortem.',
+    color: '#7C3AED',
+    outputType: 'text',
+    outputModel: DEFAULT_MODELS.text,
+    outputAutoApprove: false,
+    reviewLoop: { maxRounds: 2 },
+    user: { index: 0, model: 'Human', position: { x: 0, y: 0 } },
+    leadAgent: {
+      id: 'board-chair',
+      index: 1,
+      name: 'Board Chair',
+      description: "You chair a startup stress-test. When the founder gives a pitch, restate it in one sentence, then assign each advisor one critique task on that same pitch. Never praise the idea. When every advisor has finished, deliver a memo: the three biggest risks ranked, the cheapest test for each, and a pre-mortem with one sentence per advisor starting 'A year later this failed because'.",
+      color: '#7C3AED',
+      model: CLAUDE_MODELS.default,
+      humanInTheLoop: true,
+      position: { x: 0, y: 130 },
+      subagents: [
+        {
+          id: 'skeptical-investor',
+          index: 2,
+          name: 'Skeptical Investor',
+          description: "You back 1 in 100 pitches and your fund loses money if you back a dud. Look for reasons to say no: market size, who pays, how it scales, why now. Banned: praise, 'interesting', 'great idea'. Every claim needs a number. Output: the top three reasons to pass, each with the number that would change your mind.",
+          color: '#0EA5E9',
+          humanInTheLoop: true,
+          model: CLAUDE_MODELS.default,
+          position: { x: -300, y: 280 }
+        },
+        {
+          id: 'target-customer',
+          index: 3,
+          name: 'Target Customer',
+          description: 'You are a busy, budget-limited Vanderbilt student who would have to change habits and pay. Say what you would actually do, not what sounds nice. Name the free option you use today and the price at which you would walk away. Output: would you use it this week (yes or no), why, and the most you would pay.',
+          color: '#F97316',
+          humanInTheLoop: true,
+          model: CLAUDE_MODELS.default,
+          position: { x: 0, y: 280 }
+        },
+        {
+          id: 'operations-lead',
+          index: 4,
+          name: 'Operations Lead',
+          description: 'You must deliver this with three people and six months. Find what breaks first: cost, supply, legal, data, support load. Be specific about people, tools and money. Output: the first three things that break and the cheapest fix for each.',
+          color: '#14B8A6',
+          model: CLAUDE_MODELS.default,
+          position: { x: 300, y: 280 }
         }
       ]
     }

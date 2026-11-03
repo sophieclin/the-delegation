@@ -1,3 +1,16 @@
+> Fork of *The Delegation* by Arturo Paracuellos (unboring.net), github.com/arturitu/the-delegation. Modified to run on Claude.
+
+## Claude fork notes
+
+- **Provider:** text generation runs on Claude via `src/core/llm/providers/ClaudeProvider.ts` (default: `claude-haiku-5-5`, option: `claude-sonnet-5-5`). Gemini still works for existing teams; pick the provider in the API key dialog. Image, music and video generation remain Gemini-only.
+- **New team:** "Startup Stress-Test Board" (Board Chair, Skeptical Investor, Target Customer, Operations Lead).
+- **Bring your own key:** your Anthropic key is stored in this browser's localStorage and sent only to api.anthropic.com. Because the app calls the API directly from the browser (the SDK's `dangerouslyAllowBrowser` option), anyone with access to your browser profile, or an XSS bug, could read the key. Use a spend-limited key for demos and never commit keys.
+- **Run:** `npm install && npm run dev` (port 3000), then paste your key from console.anthropic.com.
+- **Licensing:** code is MIT (original `LICENSE` kept); the 3D assets are CC BY-NC 4.0 (attribution required, no commercial use). This fork is non-commercial.
+- **Pricing/model IDs** in `src/core/llm/constants.ts` and `pricing.ts` were taken from Anthropic docs on 2026-10-06; re-verify before relying on them.
+
+---
+
 <p align="center">
   <img src="public/images/the-delegation.svg" width="256" alt="The Delegation Logo">
 </p>

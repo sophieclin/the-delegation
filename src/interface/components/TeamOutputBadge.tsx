@@ -3,6 +3,8 @@ import React from 'react';
 import { AgenticSystem } from '../../data/agents';
 import { InfoTooltip } from './InfoTooltip';
 import { USER_COLOR, USER_COLOR_SOFT } from '../../theme/brand';
+import { useUiStore } from '../../integration/store/uiStore';
+import { resolveTextModel } from '../../core/llm/getProvider';
 
 interface TeamOutputBadgeProps {
   system: AgenticSystem;
@@ -10,6 +12,11 @@ interface TeamOutputBadgeProps {
 }
 
 export const TeamOutputBadge: React.FC<TeamOutputBadgeProps> = ({ system, className = '' }) => {
+  const llmConfig = useUiStore(s => s.llmConfig);
+  // Text output runs on the configured provider's model, whatever the team data says.
+  const modelLabel = (system.outputType ?? 'text') === 'text'
+    ? resolveTextModel(llmConfig, system.outputModel)
+    : system.outputModel;
   return (
     <div className={`flex items-center gap-3 px-3 py-1.5 bg-zinc-50/50 border border-zinc-100/50 cursor-pointer rounded-xl backdrop-blur-sm ${className}`}>
       {/* Left Column: Stacked type and status */}
@@ -54,7 +61,7 @@ export const TeamOutputBadge: React.FC<TeamOutputBadgeProps> = ({ system, classN
       <div className="flex flex-col gap-0.5 flex-1 min-w-0 pl-1">
         <span className="text-[7px] font-black text-zinc-300 uppercase tracking-widest leading-none">GENERATION MODEL</span>
         <span className="text-[10px] font-bold text-zinc-600 font-mono lowercase leading-tight">
-          {system.outputModel}
+          {modelLabel}
         </span>
       </div>
     </div>

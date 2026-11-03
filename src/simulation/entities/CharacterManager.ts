@@ -338,7 +338,9 @@ export class CharacterManager {
         posElement.assign(vec4(pos, 1.0));
       });
 
-})().compute(this.instanceCount, [1]);
+    // Workgroup size 1: with the default size the last instance was never dispatched on some GPUs
+    // (the final agent stayed in 'walk' without moving), so each agent gets its own workgroup.
+    })().compute(this.instanceCount, [1]);
   }
 
   private createInstancedMesh() {
